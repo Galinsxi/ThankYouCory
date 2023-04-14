@@ -1,9 +1,10 @@
-<?php
+<?php  
+
 // Set the response content type to JSON
 header('Content-Type:application/json');
 
 // Set your OpenAI API key
-$OPENAI_API_KEY = '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';
+$OPENAI_API_KEY = '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';
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,49 +48,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Parse the JSON response from the OpenAI API
     $res = json_decode($response);
     
+    // Check if the API returned an error message
+    if (isset($res->error)) {
+        // Return an error message with a proper HTTP status code
+        http_response_code(400);
+        echo json_encode([
+            'message' => $res->error->message
+        ]);
+        return;
+    }
+    
     // Get the ideas from the API response
     $ideas = [];
     if (isset($res->choices) && is_array($res->choices) && count($res->choices) > 0) {
-      $ideas_text = str_replace("\n", "<!--DIVIDER-->", $res->choices[0]->text);
-      $ideas = array_map(function($idea) {
-        return preg_replace('/^\d+\.\s+/', '', $idea);
-      }, explode("<!--DIVIDER-->", $ideas_text));
-
-      if (empty($ideas)) {
-        // Create an error JSON response if no ideas were found
-        $json_arr = [
-          'status' => 'error',
-          'ideas' => [],
-          'message' => 'No ideas found'
-        ];
+        // Extract the ideas from the API response
+        $ideas_text = str_replace("\n", "<!--DIVIDER-->", $res->choices[0]->text);
+        $ideas = array_map(function($idea) {
+            return preg_replace('/^\d+\.\s+/', '', $idea);
+        }, explode("<!--DIVIDER-->", $ideas_text));
         
-        // Return the JSON response to the client
-        echo json_encode($json_arr, JSON_FORCE_OBJECT);
-        return;
-      }
+        // Check if any ideas were returned
+        if (empty($ideas)) {
+            // Create an error JSON response if no ideas were found
+            $json_arr = [
+                'status' => 'error',
+                'ideas' => [],
+                'message' => 'No ideas found'
+            ];
+        } else {
+            // Create a success JSON response with the ideas
+            $json_arr = [
+                'status' => 'success',
+                'ideas' => $ideas,
+                'message' => 'Fetch success'
+            ];
+        }
+    } else {
+        // Create an error JSON response if the API response is not what we expect
+        $json_arr = [
+            'status' => 'error',
+            'ideas' => [],
+            'message' => 'Unexpected API response'
+        ];
     }
-    else {
-      // Create an error JSON response if the choices array is empty
-      $json_arr = [
-        'status' => 'error',
-        'ideas' => [],
-        'message' => 'No ideas found'
-      ];
-      
-      // Return the JSON response to the client
-      echo json_encode($json_arr, JSON_FORCE_OBJECT);
-      return;
-    }
-
-    // Create the JSON response for the client
-    $json_arr = [
-      'status' => 'success',
-      'ideas' => $ideas,
-      'message' => 'Fetch success'
-    ];
-
-    // Return the JSON response to the client
-    echo json_encode($json_arr, JSON_FORCE_OBJECT);
   }
 }
+
 ?>
