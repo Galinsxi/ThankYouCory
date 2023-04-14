@@ -3,7 +3,7 @@
 header('Content-Type:application/json');
 
 // Set your OpenAI API key
-$OPENAI_API_KEY = 'my API key goes here';
+$OPENAI_API_KEY = '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';
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'Content-Type: application/json',
       'Authorization: Bearer ' . $OPENAI_API_KEY ?? '',
     ]);
+
+
     $data = array(
       'model' => 'text-davinci-003',
       'prompt' => 'list 10 content ideas related to "'.$topic.'"',
