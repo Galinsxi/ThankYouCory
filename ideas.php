@@ -54,24 +54,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $ideas = array_map(function($idea) {
         return preg_replace('/^\d+\.\s+/', '', $idea);
       }, explode("<!--DIVIDER-->", $ideas_text));
+
+      if (empty($ideas)) {
+        // Create an error JSON response if no ideas were found
+        $json_arr = [
+          'status' => 'error',
+          'ideas' => [],
+          'message' => 'No ideas found'
+        ];
+        
+        // Return the JSON response to the client
+        echo json_encode($json_arr, JSON_FORCE_OBJECT);
+        return;
+      }
     }
-    
+    else {
+      // Create an error JSON response if the choices array is empty
+      $json_arr = [
+        'status' => 'error',
+        'ideas' => [],
+        'message' => 'No ideas found'
+      ];
+      
+      // Return the JSON response to the client
+      echo json_encode($json_arr, JSON_FORCE_OBJECT);
+      return;
+    }
+
     // Create the JSON response for the client
     $json_arr = [
-      'status' => empty($ideas) ? 'error' : 'success',
+      'status' => 'success',
       'ideas' => $ideas,
-      'message' => empty($ideas) ? 'No ideas found' : 'Fetch success'
+      'message' => 'Fetch success'
     ];
-    
-  } else {
-    // Create an error JSON response if the topic is empty
-    $json_arr = [
-      'status' => 'error_params',
-      'message' => 'Invalid params'
-    ];
+
+    // Return the JSON response to the client
+    echo json_encode($json_arr, JSON_FORCE_OBJECT);
   }
-  
-  // Return the JSON response to the client
-  echo json_encode($json_arr, JSON_FORCE_OBJECT);
 }
 ?>
